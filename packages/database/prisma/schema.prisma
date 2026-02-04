@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum SessionName {
+  VOCAL
+  GUITAR
+  BASS
+  SYNTH
+  DRUM
+  STRINGS
+  WINDS
+}
+
+enum EquipCategory {
+  ROOM
+  SYNTHESIZER
+  MICROPHONE
+  GUITAR
+  BASS
+  DRUM
+  AUDIO_INTERFACE
+  CABLE
+  AMPLIFIER
+  SPEAKER
+  MIXER
+  ETC
+}
+
+// ============================================
+// Models
+// ============================================
+
+model User {
+  id                 Int      @id @default(autoincrement())
+  email              String   @unique
+  password           String
+  hashedRefreshToken String?
+  name               String
+  nickname           String   @unique
+  bio                String?
+  image              String?
+  isAdmin            Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  generationId      Int
+  generation        Generation  @relation(fields: [generationId], references: [id], onDelete: Restrict)
+  leadingGeneration Generation? @relation("generationLeader")
+
+  sessions       Session[]
+  leadingSession Session?  @relation("sessionLeader")
+
+  joinedTeams  TeamMember[]
+  leadingTeams Team[]       @relation("teamLeader")
+
+  rentalLogs EquipmentRental[]
+
+  @@map("users")
+}
+
+model Generation {
+  id        Int      @id @default(autoincrement())
+  order     Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leader   User? @relation("generationLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  leaderId Int?  @unique
+
+  users User[]
+
+  @@map("generations")
+}
+
+model Session {
+  id        Int         @id @default(autoincrement())
+  name      SessionName @unique
+  icon      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  leader   User? @relation("sessionLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  leaderId Int?  @unique
+
+  users        User[]
+  teamSessions TeamSession[]
+
+  @@map("sessions")
+}
+
+model Performance {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  posterImage String?
+  location    String?
+  startAt     DateTime?
+  endAt       DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  teams Team[]
+
+  @@map("performances")
+}
+
+model Team {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  description         String?
+  posterImage         String?
+  songName            String
+  songArtist          String
+  isFreshmenFixed     Boolean  @default(false)
+  isSelfMade          Boolean  @default(false)
+  songYoutubeVideoUrl String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  performanceId Int
+  Performance   Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
+
+  leaderId Int
+  leader   User @relation("teamLeader", fields: [leaderId], references: [id], onDelete: Restrict)
+
+  teamSessions TeamSession[]
+
+  @@map("teams")
+}
+
+model TeamSession {
+  id        Int      @id @default(autoincrement())
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  sessionId Int
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  members TeamMember[]
+
+  @@unique([teamId, sessionId])
+  @@map("team_sessions")
+}
+
+model TeamMember {
+  id        Int      @id @default(autoincrement())
+  index     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teamSessionId Int
+  teamSession   TeamSession @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamSessionId, userId])
+  @@unique([teamSessionId, index])
+  @@map("team_members")
+}
+
+model Equipment {
+  id          Int           @id @default(autoincrement())
+  brand       String
+  model       String
+  category    EquipCategory
+  isAvailable Boolean       @default(true)
+  description String?
+  image       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  rentalLogs EquipmentRental[]
+
+  @@map("equipments")
+}
+
+model EquipmentRental {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  equipmentId Int
+
+  users User[]
+
+  @@map("equipment_rentals")
+}
