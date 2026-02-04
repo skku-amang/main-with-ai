@@ -2,12 +2,14 @@
   "name": "@repo/database",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./generated/prisma/index.js",
+  "types": "./generated/prisma/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./generated/prisma/index.d.ts",
+      "require": "./generated/prisma/index.js",
+      "import": "./generated/prisma/index.js",
+      "default": "./generated/prisma/index.js"
     }
   },
   "scripts": {
@@ -18,7 +20,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
-    "build": "echo 'No build needed for database package'",
+    "build": "prisma generate",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,7 +30,7 @@
     "prisma": "^6.11.1",
     "tsx": "^4.19.0",
     "typescript": "^5.8.2",
-    "bcrypt": "^5.1.1",
-    "@types/bcrypt": "^5.0.2"
+    "bcryptjs": "^3.0.2",
+    "@types/bcryptjs": "^2.4.6"
   }
 }

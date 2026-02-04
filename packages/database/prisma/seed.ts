@@ -1,5 +1,5 @@
 import { PrismaClient, SessionName, EquipCategory } from '../generated/prisma';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
