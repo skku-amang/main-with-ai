@@ -16,7 +16,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { EquipCategory } from '@repo/database';
 
-@Controller('equipment')
+@Controller('equipments')
 export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
 

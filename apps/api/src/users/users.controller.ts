@@ -22,7 +22,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get('profile')
+  @Get('me')
   findProfile(
     @CurrentUser() user: { id: number },
   ) {
